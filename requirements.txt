@@ -4,3 +4,4 @@ google-auth
 gspread-dataframe
 pandas
 openpyxl
+google-generativeai
