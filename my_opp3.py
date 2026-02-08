@@ -9,28 +9,38 @@ import plotly.express as px
 import openpyxl 
 import google.generativeai as genai
 
-# --- パスワード設定 ---
+# ==========================================
+# 1. ページ設定とパスワードチェック
+# ==========================================
+st.set_page_config(layout="wide")
+
 def check_password():
-    """パスワードが正しいかチェックする関数"""
+    """パスワードが正しいかチェックし、正しくない場合は入力を促して終了する"""
     if "password_correct" not in st.session_state:
         st.session_state["password_correct"] = False
 
     if st.session_state["password_correct"]:
         return True
 
-    # パスワード入力画面の表示
+    # ログインしていない時の画面表示
     st.title("認証が必要です")
     password = st.text_input("パスワードを入力してください", type="password")
     if st.button("ログイン"):
-        if password == "deguchi":  # ← ここに好きなパスワードを設定してください
+        if password == "deguchi":  # パスワード設定
             st.session_state["password_correct"] = True
             st.rerun()
         else:
             st.error("パスワードが違います")
-    return False
+    
+    # パスワードが通っていない場合は、ここでプログラムを強制終了（下のコードを読み込ませない）
+    st.stop()
 
-# ここでチェックを実行。パスワードが違うとこれより下には進みません。
+# パスワードチェックを実行
 check_password()
+
+# ==========================================
+# 2. メインプログラム（認証後のみ実行される）
+# ==========================================
 
 from ai_config import COMMON_PROMPT_HEADER
 
@@ -71,9 +81,6 @@ from ai_prompts import (
     run_match_tactics_analysis,
 )
 
-
-st.set_page_config(layout="wide")
-
 st.title("🏓 卓球データ分析")
 
 df, df_opponents, youtube_video_id = load_and_process_data()
@@ -81,7 +88,6 @@ df, df_opponents, youtube_video_id = load_and_process_data()
 st.write('---')
 
 display_match_summary(df, df_opponents)
-
 
 st.write("---") # 区切り線
 
@@ -315,4 +321,3 @@ with tab_ai_coach:
 with tab_rally_input:
     st.session_state.current_selected_tab_name = "ラリー入力"
     rally_input_tab.display_rally_input_tab()
-
