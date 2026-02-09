@@ -4,12 +4,10 @@ import pandas as pd
 def display_recieve_score_pattern(df):
     """
     自分のレシーブで得点したパターンをStreamlitのUIに表示する関数
-    
-    Args:
-        df (pd.DataFrame): 試合の得失点データ
     """
+    # 必須列に「コメント・課題」を追加
     required_columns = ['開始時刻', '得失点の種類', 'ゲーム数', '誰のサーブか', '得点者', 
-                        'レシーブの種類', '得点の内容', 'YouTubeリンク']
+                        'レシーブの種類', '得点の内容', 'コメント・課題', 'YouTubeリンク']
 
     if df.empty or not all(col in df.columns for col in required_columns):
         st.warning('スプレッドシートの読み込みに失敗したか、必要な列が見つかりませんでした。')
@@ -21,14 +19,15 @@ def display_recieve_score_pattern(df):
             df = df.dropna(subset=['ゲーム数'])
             df['ゲーム数'] = df['ゲーム数'].astype(int)
         except Exception as e:
-            st.error(f"「ゲーム数」列の型変換中にエラーが発生しました。データ形式を確認してください: {e}")
+            st.error(f"「ゲーム数」列の型変換中にエラーが発生しました: {e}")
             return
         
         df_temp = df.copy()
-        df_temp['誰のサーブか'] = df_temp['誰のサーブか'].astype(str).str.strip()
-        df_temp['得点者'] = df_temp['得点者'].astype(str).str.strip()
-        df_temp['レシーブの種類'] = df_temp['レシーブの種類'].astype(str).str.strip()
-        df_temp['得点の内容'] = df_temp['得点の内容'].astype(str).str.strip()
+        
+        # --- 修正ポイント：NaNを空文字に置換してから文字列変換（コメント・課題を含む） ---
+        str_columns = ['誰のサーブか', '得点者', 'レシーブの種類', '得点の内容', 'コメント・課題']
+        for col in str_columns:
+            df_temp[col] = df_temp[col].fillna('').astype(str).str.strip()
 
         score_types = ['自分のプレーで得点', '相手のミスで得点', '得点（判断迷う）']
 
@@ -36,17 +35,16 @@ def display_recieve_score_pattern(df):
             (df_temp['誰のサーブか'] == '相手') &
             (df_temp['得点者'] == '自分') &
             (df_temp['得失点の種類'].isin(score_types)) &
-            (df_temp['得点の内容'].astype(str).str.strip().str.lower() != 'nan') &
-            (df_temp['得点の内容'].astype(str).str.strip() != '') &
-            (df_temp['得点の内容'].notna())
+            (df_temp['得点の内容'] != '') # すでに空文字置換済みなのでシンプルに判定
         ].copy()
 
         if filtered_df.empty:
             st.warning('自分のレシーブで得点したパターンは見つかりませんでした。')
             return
         
+        # 表示列に「コメント・課題」を追加
         display_columns = [
-            '開始時刻', 'ゲーム数', 'レシーブの種類', '得点の内容'
+            '開始時刻', 'ゲーム数', 'レシーブの種類', '得点の内容', 'コメント・課題'
         ]
 
         def format_youtube_link_for_html(row):
@@ -58,8 +56,9 @@ def display_recieve_score_pattern(df):
             html_display_df['開始時刻'] = html_display_df.apply(format_youtube_link_for_html, axis=1)
             html_display_df = html_display_df.drop(columns='YouTubeリンク')
         
+        # index=False で行番号を非表示
         st.markdown(
-            html_display_df.to_html(escape=False, classes='dataframe table-striped'),
+            html_display_df.to_html(escape=False, classes='dataframe table-striped', index=False),
             unsafe_allow_html=True
         )
         st.info('この表は、自分のレシーブで得点した時の各パターンを表示しています。')
@@ -67,15 +66,9 @@ def display_recieve_score_pattern(df):
 def get_recieve_score_pattern_for_ai(df):
     """
     自分のレシーブで得点したパターンを抽出し、AIに渡すためのMarkdown文字列を生成する
-    
-    Args:
-        df (pd.DataFrame): 試合の得失点データ
-        
-    Returns:
-        str: レシーブ時の得点パターン文字列
     """
     required_columns = ['開始時刻', '得失点の種類', 'ゲーム数', '誰のサーブか', '得点者', 
-                        'レシーブの種類', '得点の内容', 'YouTubeリンク']
+                        'レシーブの種類', '得点の内容', 'コメント・課題', 'YouTubeリンク']
 
     if df.empty or not all(col in df.columns for col in required_columns):
         return "レシーブ時の得点パターンデータが利用できません。"
@@ -87,12 +80,12 @@ def get_recieve_score_pattern_for_ai(df):
     except Exception:
         return "レシーブ時の得点パターンデータ生成中にエラーが発生しました。"
 
-    # 関連する列の空白を除去
     df_temp = df.copy()
-    df_temp['誰のサーブか'] = df_temp['誰のサーブか'].astype(str).str.strip()
-    df_temp['得点者'] = df_temp['得点者'].astype(str).str.strip()
-    df_temp['レシーブの種類'] = df_temp['レシーブの種類'].astype(str).str.strip()
-    df_temp['得点の内容'] = df_temp['得点の内容'].astype(str).str.strip()
+    
+    # 欠損値を空文字に置換
+    str_columns = ['誰のサーブか', '得点者', 'レシーブの種類', '得点の内容', 'コメント・課題']
+    for col in str_columns:
+        df_temp[col] = df_temp[col].fillna('').astype(str).str.strip()
 
     score_types = ['自分のプレーで得点', '相手のミスで得点', '得点（判断迷う）']
 
@@ -100,20 +93,17 @@ def get_recieve_score_pattern_for_ai(df):
         (df_temp['誰のサーブか'] == '相手') &
         (df_temp['得点者'] == '自分') &
         (df_temp['得失点の種類'].isin(score_types)) &
-        (df_temp['得点の内容'].astype(str).str.strip().str.lower() != 'nan') &
-        (df_temp['得点の内容'].astype(str).str.strip() != '') &
-        (df_temp['得点の内容'].notna())
+        (df_temp['得点の内容'] != '')
     ].copy()
 
     if filtered_df.empty:
         return "自分のレシーブで得点したパターンは見つかりませんでした。"
     
-    # AIに渡すための列を選択
+    # AIへの送信項目に「コメント・課題」を追加
     columns_for_ai = [
-        'ゲーム数', 'レシーブの種類', '得点の内容'
+        'ゲーム数', 'レシーブの種類', '得点の内容', 'コメント・課題'
     ]
     
-    # Markdown形式に変換
     pattern_markdown = filtered_df[columns_for_ai].to_markdown(index=False)
     
     return f"## 自分のレシーブでの得点パターン一覧\n\n{pattern_markdown}"

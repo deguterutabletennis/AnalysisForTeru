@@ -7,7 +7,7 @@ import numpy as np
 import datetime
 import plotly.express as px
 import openpyxl 
-import google.generativeai as genai
+#import google.generativeai as genai
 
 # ==========================================
 # 1. ページ設定とパスワードチェック
@@ -26,7 +26,7 @@ def check_password():
     st.title("認証が必要です")
     password = st.text_input("パスワードを入力してください", type="password")
     if st.button("ログイン"):
-        if password == "deguchi":  # パスワード設定
+        if password == "degucci":  # パスワード設定
             st.session_state["password_correct"] = True
             st.rerun()
         else:
@@ -96,23 +96,24 @@ if "all_rallies" not in st.session_state:
     st.session_state.all_rallies = []
 
 # AI関連のSession State変数をここで初期化
-if "gemini_ready" not in st.session_state:
-    try:
-        google_api_key = st.secrets["gemini"]["google_api_key"]
-        genai.configure(api_key=google_api_key)
-        st.session_state.gemini_ready = True
-    except KeyError:
-        st.session_state.gemini_ready = False
-
-if "gemini_api_key" not in st.session_state:
-    if st.session_state.gemini_ready:
-        st.session_state.gemini_api_key = google_api_key
-    else:
-        st.session_state.gemini_api_key = ""    
+#if "gemini_ready" not in st.session_state:
+#    try:
+#        google_api_key = st.secrets["gemini"]["google_api_key"]
+#        genai.configure(api_key=google_api_key)
+#        st.session_state.gemini_ready = True
+#    except KeyError:
+#        st.session_state.gemini_ready = False
+#
+#if "gemini_api_key" not in st.session_state:
+#    if st.session_state.gemini_ready:
+#        st.session_state.gemini_api_key = google_api_key
+#    else:
+#        st.session_state.gemini_api_key = ""    
 
 
 # メイン画面を「データ分析結果」と「AIコーチング」のタブに分割
-tab_analysis, tab_opponent, tab_ai_coach, tab_rally_input = st.tabs(["📊 データ分析結果", "🧐相手の傾向", "🤖AIコーチング", "🏓ラリー入力"])
+#tab_analysis, tab_opponent, tab_ai_coach, tab_rally_input = st.tabs(["📊 データ分析結果", "🧐相手の傾向", "🤖AIコーチング", "🏓ラリー入力"])
+tab_analysis, tab_opponent, tab_rally_input = st.tabs(["📊 データ分析結果", "🧐相手の傾向", "🏓ラリー入力"])
 
 with tab_analysis:
     st.session_state.current_selected_tab_name = "📊 データ分析結果"
@@ -279,44 +280,44 @@ with tab_opponent:
     display_opponent_serve_sequence_analysis(df, df_opponents)
 
 
-with tab_ai_coach:
-    st.session_state.current_selected_tab_name = "🤖 AIコーチング"
-    st.subheader("データが語る、あなたの潜在能力。AIコーチが成長への最短ルートを照らします。")
-    if st.session_state.gemini_ready:
-        # 2つのカラムに分けてボタンを配置
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if st.button("全体的な分析", key="ai_overall"):
-                run_overall_analysis(df, df_opponents) # 関数呼び出しに置き換え
-
-            if st.button("得点源の強化", key="ai_scores"):
-                run_scores_analysis(df, df_opponents) # 関数呼び出しに置き換え
-
-            if st.button("失点パターンの改善", key="ai_misses"):
-                run_misses_analysis(df, df_opponents) # 関数呼び出しに置き換え
-
-            if st.button("謎の専属コーチの分析を実行", key="ai_coach"):
-                run_coach_analysis(df, df_opponents) # 関数呼び出しに置き換え
-        with col2:
-            if st.button("サーブ戦術を分析", key="ai_serve"):
-                run_serve_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
-
-            if st.button("レシーブ戦術を分析", key="ai_recieve"):
-                run_receive_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
-
-            if st.button("ラリー戦術を分析", key="ai_rally"):
-                run_rally_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
-
-            if st.button("試合運び(戦術)を分析", key="ai_tactics"):
-                run_match_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
-
-        st.markdown("---")
-        st.subheader("AIからの回答")
-        if "ai_response" in st.session_state:
-            st.markdown(st.session_state.ai_response)
-    else:
-        st.warning("AI機能を利用するには、APIキーを正しく設定してください。")
+#with tab_ai_coach:
+#    st.session_state.current_selected_tab_name = "🤖 AIコーチング"
+#    st.subheader("データが語る、あなたの潜在能力。AIコーチが成長への最短ルートを照らします。")
+#    if st.session_state.gemini_ready:
+#        # 2つのカラムに分けてボタンを配置
+#        col1, col2 = st.columns(2)
+#
+#        with col1:
+#            if st.button("全体的な分析", key="ai_overall"):
+#                run_overall_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#
+#            if st.button("得点源の強化", key="ai_scores"):
+#                run_scores_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#
+#            if st.button("失点パターンの改善", key="ai_misses"):
+#                run_misses_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#
+#            if st.button("謎の専属コーチの分析を実行", key="ai_coach"):
+#                run_coach_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#        with col2:
+#            if st.button("サーブ戦術を分析", key="ai_serve"):
+#                run_serve_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#
+#            if st.button("レシーブ戦術を分析", key="ai_recieve"):
+#                run_receive_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#
+#            if st.button("ラリー戦術を分析", key="ai_rally"):
+#                run_rally_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#
+#            if st.button("試合運び(戦術)を分析", key="ai_tactics"):
+#                run_match_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+#
+#        st.markdown("---")
+#        st.subheader("AIからの回答")
+#        if "ai_response" in st.session_state:
+#            st.markdown(st.session_state.ai_response)
+#    else:
+#        st.warning("AI機能を利用するには、APIキーを正しく設定してください。")
 
 with tab_rally_input:
     st.session_state.current_selected_tab_name = "ラリー入力"

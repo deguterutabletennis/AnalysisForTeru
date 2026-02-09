@@ -4,12 +4,9 @@ import pandas as pd
 def display_serve_score_pattern(df):
     """
     自分のサーブで得点したパターンをStreamlitのUIに表示する関数
-    
-    Args:
-        df (pd.DataFrame): 試合の得失点データ
     """
     required_columns = ['開始時刻', '得失点の種類', 'ゲーム数', '誰のサーブか', '得点者', 
-                        'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容', 'YouTubeリンク']
+                        'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容', 'コメント・課題', 'YouTubeリンク']
 
     if df.empty or not all(col in df.columns for col in required_columns):
         st.warning('スプレッドシートの読み込みに失敗したか、必要な列が見つかりませんでした。')
@@ -21,16 +18,17 @@ def display_serve_score_pattern(df):
             df = df.dropna(subset=['ゲーム数'])
             df['ゲーム数'] = df['ゲーム数'].astype(int)
         except Exception as e:
-            st.error(f"「ゲーム数」列の型変換中にエラーが発生しました。データ形式を確認してください: {e}")
+            st.error(f"「ゲーム数」列の型変換中にエラーが発生しました: {e}")
             return
         
         df_temp = df.copy()
-        df_temp['誰のサーブか'] = df_temp['誰のサーブか'].astype(str).str.strip()
-        df_temp['得点者'] = df_temp['得点者'].astype(str).str.strip()
-        df_temp['サーブの種類'] = df_temp['サーブの種類'].astype(str).str.strip()
-        df_temp['サーブのコース'] = df_temp['サーブのコース'].astype(str).str.strip()
-        df_temp['サーブの質'] = df_temp['サーブの質'].astype(str).str.strip()
-        df_temp['得点の内容'] = df_temp['得点の内容'].astype(str).str.strip()
+        
+        # --- 修正ポイント：NaNを空文字に置換してから文字列変換する ---
+        str_columns = ['誰のサーブか', '得点者', 'サーブの種類', 'サーブのコース', 
+                       'サーブの質', '得点の内容', 'コメント・課題']
+        for col in str_columns:
+            # fillna('') を入れることで "nan" と表示されるのを防ぐ
+            df_temp[col] = df_temp[col].fillna('').astype(str).str.strip()
 
         score_types = ['自分のプレーで得点', '相手のミスで得点', '得点（判断迷う）']
 
@@ -38,9 +36,7 @@ def display_serve_score_pattern(df):
             (df_temp['誰のサーブか'] == '自分') &
             (df_temp['得点者'] == '自分') &
             (df_temp['得失点の種類'].isin(score_types)) &
-            (df_temp['得点の内容'].astype(str).str.strip().str.lower() != 'nan') &
-            (df_temp['得点の内容'].astype(str).str.strip() != '') &
-            (df_temp['得点の内容'].notna())
+            (df_temp['得点の内容'] != '') # すでに空文字に置換済みなのでシンプルに判定可能
         ].copy()
 
         if filtered_df.empty:
@@ -48,7 +44,7 @@ def display_serve_score_pattern(df):
             return
         
         display_columns = [
-            '開始時刻', 'ゲーム数', 'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容'
+            '開始時刻', 'ゲーム数', 'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容', 'コメント・課題'
         ]
 
         def format_youtube_link_for_html(row):
@@ -61,7 +57,7 @@ def display_serve_score_pattern(df):
             html_display_df = html_display_df.drop(columns='YouTubeリンク')
         
         st.markdown(
-            html_display_df.to_html(escape=False, classes='dataframe table-striped'),
+            html_display_df.to_html(escape=False, classes='dataframe table-striped', index=False),
             unsafe_allow_html=True
         )
         st.info('この表は、自分のサーブで自分が得点した時の各パターンを表示しています。')
@@ -70,15 +66,9 @@ def display_serve_score_pattern(df):
 def get_serve_score_pattern_for_ai(df):
     """
     自分のサーブで得点したパターンを抽出し、AIに渡すためのMarkdown文字列を生成する
-    
-    Args:
-        df (pd.DataFrame): 試合の得失点データ
-        
-    Returns:
-        str: サーブ時の得点パターン文字列
     """
     required_columns = ['開始時刻', '得失点の種類', 'ゲーム数', '誰のサーブか', '得点者', 
-                        'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容', 'YouTubeリンク']
+                        'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容', 'コメント・課題', 'YouTubeリンク']
 
     if df.empty or not all(col in df.columns for col in required_columns):
         return "サーブ時の得点パターンデータが利用できません。"
@@ -90,14 +80,13 @@ def get_serve_score_pattern_for_ai(df):
     except Exception:
         return "サーブ時の得点パターンデータ生成中にエラーが発生しました。"
     
-    # 関連する列の空白を除去
     df_temp = df.copy()
-    df_temp['誰のサーブか'] = df_temp['誰のサーブか'].astype(str).str.strip()
-    df_temp['得点者'] = df_temp['得点者'].astype(str).str.strip()
-    df_temp['サーブの種類'] = df_temp['サーブの種類'].astype(str).str.strip()
-    df_temp['サーブのコース'] = df_temp['サーブのコース'].astype(str).str.strip()
-    df_temp['サーブの質'] = df_temp['サーブの質'].astype(str).str.strip()
-    df_temp['得点の内容'] = df_temp['得点の内容'].astype(str).str.strip()
+    
+    # --- 修正ポイント：ここでも同様に NaN を空文字に置換 ---
+    str_columns = ['誰のサーブか', '得点者', 'サーブの種類', 'サーブのコース', 
+                   'サーブの質', '得点の内容', 'コメント・課題']
+    for col in str_columns:
+        df_temp[col] = df_temp[col].fillna('').astype(str).str.strip()
 
     score_types = ['自分のプレーで得点', '相手のミスで得点', '得点（判断迷う）']
 
@@ -105,22 +94,16 @@ def get_serve_score_pattern_for_ai(df):
         (df_temp['誰のサーブか'] == '自分') &
         (df_temp['得点者'] == '自分') &
         (df_temp['得失点の種類'].isin(score_types)) &
-        (df_temp['得点の内容'].astype(str).str.strip().str.lower() != 'nan') &
-        (df_temp['得点の内容'].astype(str).str.strip() != '') &
-        (df_temp['得点の内容'].notna())
+        (df_temp['得点の内容'] != '')
     ].copy()
 
     if filtered_df.empty:
         return "自分のサーブで得点したパターンは見つかりませんでした。"
     
-    # AIに渡すための列を選択
     columns_for_ai = [
-        'ゲーム数', 'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容'
+        'ゲーム数', 'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容', 'コメント・課題'
     ]
     
-    # Markdown形式に変換
     pattern_markdown = filtered_df[columns_for_ai].to_markdown(index=False)
     
     return f"## 自分のサーブでの得点パターン一覧\n\n{pattern_markdown}"
-
-
