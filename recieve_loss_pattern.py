@@ -44,7 +44,7 @@ def display_recieve_loss_pattern(df):
         
         # 表示列に「コメント・課題」を追加
         display_columns = [
-            '開始時刻', 'ゲーム数', 'レシーブの種類', '失点の内容', 'コメント・課題'
+            '開始時刻', 'レシーブの種類', '失点の内容', 'コメント・課題'
         ]
 
         def format_youtube_link_for_html(row):

@@ -44,7 +44,7 @@ def display_serve_score_pattern(df):
             return
         
         display_columns = [
-            '開始時刻', 'ゲーム数', 'サーブの種類', 'サーブのコース', 'サーブの質', '得点の内容', 'コメント・課題'
+            '開始時刻', 'サーブの種類', 'サーブのコース', '得点の内容', 'コメント・課題'
         ]
 
         def format_youtube_link_for_html(row):
