@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from ai_config import COMMON_PROMPT_HEADER
 
 # データ抽出用関数のインポート
@@ -23,11 +24,67 @@ from point_breakdown_analysis import get_point_breakdown_analysis_for_ai
 #from ai_functions import get_ai_analysis_data # '謎の専属コーチ'用
 
 def display_prompt_card(title, prompt):
-    """生成されたプロンプトをコピー可能な形式で画面に表示する共通関数"""
+    """スマホでも確実にコピーできるボタン付きのプロンプト表示共通関数"""
     st.subheader(f"💡 {title}")
-    st.info("下の枠内のテキストをコピーして、ChatGPTやGeminiなどのAIツールに貼り付けてください。")
-    # 言語をmarkdownに指定することで、AIへの指示、表、リストなどが綺麗に表示され、右上にコピーボタンが出ます
-    st.code(prompt.strip(), language="markdown")
+    
+    # プロンプトの余計な空白を削除
+    clean_prompt = prompt.strip()
+
+    # 1. スマホでも確実に動作する「コピー専用ボタン」をJavaScriptで作成
+    # Streamlit標準のボタンより強力にクリップボードへ干渉します
+    copy_html = f"""
+        <div id="copy-area">
+            <button onclick="copyToClipboard()" style="
+                width: 100%;
+                padding: 15px;
+                background-color: #FF4B4B;
+                color: white;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 18px;
+                margin-bottom: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            ">
+                📋 プロンプトをコピーする
+            </button>
+            <p id="status-msg" style="
+                color: #28a745;
+                font-size: 14px;
+                font-weight: bold;
+                text-align: center;
+                display: none;
+            "> ✅ コピー完了！AIアプリに貼り付けてください</p>
+        </div>
+
+        <script>
+            function copyToClipboard() {{
+                const text = `{clean_prompt.replace('`', '\\`').replace('$', '\\$')}`;
+                const el = document.createElement('textarea');
+                el.value = text;
+                document.body.appendChild(el);
+                el.select();
+                try {{
+                    document.execCommand('copy');
+                    const msg = document.getElementById('status-msg');
+                    msg.style.display = 'block';
+                    setTimeout(() => {{ msg.style.display = 'none'; }}, 3000);
+                }} catch (err) {{
+                    alert('コピーに失敗しました。手動で選択してコピーしてください。');
+                }}
+                document.body.removeChild(el);
+            }}
+        </script>
+    """
+
+    # HTMLコンポーネントとしてボタンを表示（高さはボタンとメッセージ分で100px程度）
+    components.html(copy_html, height=100)
+
+    # 2. 念のため中身が見えるように展開式で表示（st.codeは補助用）
+    with st.expander("📝 生成されたプロンプトの中身を確認する"):
+        st.info("スマホで上のボタンが効かない場合は、以下の枠内を長押ししてコピーしてください。")
+        st.code(clean_prompt, language="markdown")
 
 def run_overall_analysis(df, df_opponents):
     """全体の分析プロンプトを生成して表示する。"""
