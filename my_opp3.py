@@ -46,7 +46,7 @@ from ai_config import COMMON_PROMPT_HEADER
 
 import rally_input_tab
 import drive_analysis_tab
-from ai_functions import (generate_ai_response,get_ai_analysis_data)
+#from ai_functions import (generate_ai_response,get_ai_analysis_data)
 from utils import(time_to_seconds, create_youtube_link, group_serve_type, group_serve_course, group_detailed_serve_course)
 from score_summary import(display_score_summary, get_score_summary_for_ai)
 from match_summary import(display_match_summary, get_match_summary_for_ai)
@@ -283,41 +283,38 @@ with tab_opponent:
 with tab_ai_coach:
     st.session_state.current_selected_tab_name = "🤖 AIコーチング"
     st.subheader("データが語る、あなたの潜在能力。AIコーチが成長への最短ルートを照らします。")
-    if st.session_state.gemini_ready:
-        # 2つのカラムに分けてボタンを配置
-        col1, col2 = st.columns(2)
+    # 2つのカラムに分けてボタンを配置
+    col1, col2 = st.columns(2)
 
-        with col1:
-            if st.button("全体的な分析", key="ai_overall"):
-                run_overall_analysis(df, df_opponents) # 関数呼び出しに置き換え
+    with col1:
+        if st.button("全体的な分析", key="ai_overall"):
+            run_overall_analysis(df, df_opponents) # 関数呼び出しに置き換え
 
-            if st.button("得点源の強化", key="ai_scores"):
-                run_scores_analysis(df, df_opponents) # 関数呼び出しに置き換え
+        if st.button("得点源の強化", key="ai_scores"):
+            run_scores_analysis(df, df_opponents) # 関数呼び出しに置き換え
 
-            if st.button("失点パターンの改善", key="ai_misses"):
-                run_misses_analysis(df, df_opponents) # 関数呼び出しに置き換え
+        if st.button("失点パターンの改善", key="ai_misses"):
+            run_misses_analysis(df, df_opponents) # 関数呼び出しに置き換え
 
-            if st.button("謎の専属コーチの分析を実行", key="ai_coach"):
-                run_coach_analysis(df, df_opponents) # 関数呼び出しに置き換え
-        with col2:
-            if st.button("サーブ戦術を分析", key="ai_serve"):
-                run_serve_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+        if st.button("謎の専属コーチの分析を実行", key="ai_coach"):
+            run_coach_analysis(df, df_opponents) # 関数呼び出しに置き換え
+    with col2:
+        if st.button("サーブ戦術を分析", key="ai_serve"):
+            run_serve_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
 
-            if st.button("レシーブ戦術を分析", key="ai_recieve"):
-                run_receive_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+        if st.button("レシーブ戦術を分析", key="ai_recieve"):
+            run_receive_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
 
-            if st.button("ラリー戦術を分析", key="ai_rally"):
-                run_rally_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+        if st.button("ラリー戦術を分析", key="ai_rally"):
+            run_rally_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
 
-            if st.button("試合運び(戦術)を分析", key="ai_tactics"):
-                run_match_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
+        if st.button("試合運び(戦術)を分析", key="ai_tactics"):
+            run_match_tactics_analysis(df, df_opponents) # 関数呼び出しに置き換え
 
-        st.markdown("---")
-        st.subheader("AIからの回答")
-        if "ai_response" in st.session_state:
-            st.markdown(st.session_state.ai_response)
-    else:
-        st.warning("AI機能を利用するには、APIキーを正しく設定してください。")
+    st.markdown("---")
+    st.subheader("AIからの回答")
+    if "ai_response" in st.session_state:
+        st.markdown(st.session_state.ai_response)
 
 with tab_rally_input:
     st.session_state.current_selected_tab_name = "ラリー入力"
