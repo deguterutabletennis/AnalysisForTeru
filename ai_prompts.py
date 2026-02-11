@@ -21,7 +21,7 @@ from previous_ball_analysis import get_previous_ball_analysis_for_ai
 from consecutive_ball_analysis import get_consecutive_ball_analysis_for_ai
 from game_ending_analysis import get_game_ending_analysis_for_ai
 from point_breakdown_analysis import get_point_breakdown_analysis_for_ai
-#from ai_functions import get_ai_analysis_data # '謎の専属コーチ'用
+from ai_functions import get_ai_analysis_data # '謎の専属コーチ'用
 
 def display_prompt_card(title, prompt):
     """スマホでも確実にコピーできるボタン付きのプロンプト表示共通関数"""

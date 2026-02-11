@@ -1,16 +1,16 @@
-#import streamlit as st
+import streamlit as st
 #import google.generativeai as genai
 #import time 
 
 #model = genai.GenerativeModel('gemini-1.5-flash')
 
-## --- ユーザーが選択した分析項目とそれに対応するデータを取得する関数 ---
-#def get_ai_analysis_data(analysis_type, df, tactic_option=None):
-#    if analysis_type == 'coach':
-#        # 'コメント・課題'
-#        return df[['コメント・課題']].to_markdown(index=False)
-#            
-#    return ""
+# --- ユーザーが選択した分析項目とそれに対応するデータを取得する関数 ---
+def get_ai_analysis_data(analysis_type, df, tactic_option=None):
+    if analysis_type == 'coach':
+        # 'コメント・課題'
+        return df[['コメント・課題']].to_markdown(index=False)
+            
+    return ""
 
 ## --- AIにプロンプトを送信する関数 ---
 #def generate_ai_response(prompt_text):
